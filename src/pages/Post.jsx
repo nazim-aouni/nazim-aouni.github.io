@@ -1,67 +1,69 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import NavHeader from '../components/NavHeader';
 import BlogFooter from '../components/BlogFooter';
 import { Helmet } from 'react-helmet';
-import { supabase } from '../SupabaseClient';
-import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../SupabaseClient'; 
 
-const details = { mail: 'cslegacy10@gmail.com' };
-
-// Lazy load syntax highlighter
-const SyntaxHighlighter = React.lazy(() =>
-  import('react-syntax-highlighter').then((mod) => ({ default: mod.Prism }))
+const details = {
+  mail: 'cslegacy10@gmail.com',
+};
+//lazy loading this heavy ressource
+const SyntaxHighlighter = React.lazy(() => 
+  import('react-syntax-highlighter').then(mod => ({ default: mod.Prism }))
 );
 
-const fetchPost = async (id) => {
-  const { data, error } = await supabase
-    .from('post')
-    .select('*')
-    .eq('post_id', id)
-    .single();
-  if (error) throw error;
-  return data;
-};
-
-const fetchBlocks = async (id) => {
-  const { data, error } = await supabase
-    .from('block')
-    .select('*')
-    .eq('post_id', id)
-    .order('orderr', { ascending: true });
-  if (error) throw error;
-  return data;
-};
-
-const fetchKeywords = async (id) => {
-  const { data, error } = await supabase
-    .from('post_keyword')
-    .select('keyword(keyword_id, keyword)')
-    .eq('post_id', id);
-  if (error) throw error;
-  return data?.map((k) => k.keyword.keyword) || [];
-};
-
 const Post = () => {
-  const { id } = useParams();
+  const { id } = useParams(); 
+  const [post, setPost] = useState(null);
+  const [blocks, setBlocks] = useState([]);
+  const [keywords, setKeywords] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const { data: post, isLoading: postLoading, error: postError } = useQuery({
-    queryKey: ['post', id],
-    queryFn: () => fetchPost(id),
-  });
+  useEffect(() => {
+    const fetchPost = async () => {
+      setLoading(true);
 
-  const { data: blocks, isLoading: blocksLoading } = useQuery({
-    queryKey: ['blocks', id],
-    queryFn: () => fetchBlocks(id),
-  });
+      // ✅ Fetch post details
+      const { data: postData, error: postError } = await supabase
+        .from('post')
+        .select('*')
+        .eq('post_id', id)
+        .single();
 
-  const { data: keywords, isLoading: keywordsLoading } = useQuery({
-    queryKey: ['keywords', id],
-    queryFn: () => fetchKeywords(id),
-  });
+      if (postError) {
+        console.error('Error fetching post:', postError);
+        setLoading(false);
+        return;
+      }
 
-  const loading = postLoading || blocksLoading || keywordsLoading;
+      // ✅ Fetch blocks for this post
+      const { data: blockData, error: blockError } = await supabase
+        .from('block')
+        .select('*')
+        .eq('post_id', id)
+        .order('orderr', { ascending: true });
+
+      if (blockError) console.error('Error fetching blocks:', blockError);
+
+      // ✅ Fetch keywords (via join through post_keyword)
+      const { data: keywordData, error: keywordError } = await supabase
+        .from('post_keyword')
+        .select('keyword(keyword_id, keyword)')
+        .eq('post_id', id);
+
+      if (keywordError) console.error('Error fetching keywords:', keywordError);
+
+      setPost(postData);
+      setBlocks(blockData || []);
+      setKeywords(keywordData?.map((k) => k.keyword.keyword) || []);
+      setLoading(false);
+    };
+
+    fetchPost();
+  }, [id]);
 
   if (loading) {
     return (
@@ -75,7 +77,7 @@ const Post = () => {
     );
   }
 
-  if (postError || !post) {
+  if (!post) {
     return (
       <>
         <NavHeader />
@@ -98,7 +100,7 @@ const Post = () => {
       <Helmet>
         <title>{post.title}</title>
         <meta name="description" content={post.description || post.title} />
-        <meta name="keywords" content={(keywords || []).join(', ')} />
+        <meta name="keywords" content={keywords.join(', ')} />
       </Helmet>
 
       <NavHeader />
@@ -121,11 +123,12 @@ const Post = () => {
             •
             <span className="ml-2">{formattedDate}</span>
           </div>
+          
         </header>
 
         {/* Post Content */}
         <article className="space-y-10">
-          {blocks?.map((block) => (
+          {blocks.map((block) => (
             <div key={block.block_id}>
               {block.type === 'text' && (
                 <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
