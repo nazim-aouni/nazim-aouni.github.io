@@ -1,71 +1,61 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense } from 'react';
 import { useParams, Link } from 'react-router-dom';
-
+import { useQuery } from '@tanstack/react-query';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import NavHeader from '../components/NavHeader';
 import BlogFooter from '../components/BlogFooter';
 import { Helmet } from 'react-helmet';
-import { supabase } from '../SupabaseClient'; 
+import { supabase } from '../SupabaseClient';
 
 const details = {
   mail: 'cslegacy10@gmail.com',
 };
-//lazy loading this heavy ressource
-const SyntaxHighlighter = React.lazy(() => 
-  import('react-syntax-highlighter').then(mod => ({ default: mod.Prism }))
+
+// Lazy loading the heavy resource
+const SyntaxHighlighter = React.lazy(() =>
+  import('react-syntax-highlighter').then((mod) => ({ default: mod.Prism }))
 );
 
+// Fetch function with all queries
+const fetchPostData = async (id) => {
+  const [postRes, blockRes, keywordRes] = await Promise.all([
+    supabase.from('post').select('*').eq('post_id', id).single(),
+    supabase
+      .from('block')
+      .select('*')
+      .eq('post_id', id)
+      .order('orderr', { ascending: true }),
+    supabase
+      .from('post_keyword')
+      .select('keyword(keyword_id, keyword)')
+      .eq('post_id', id),
+  ]);
+
+  if (postRes.error) throw postRes.error;
+
+  return {
+    post: postRes.data,
+    blocks: blockRes.data || [],
+    keywords: keywordRes.data?.map((k) => k.keyword.keyword) || [],
+  };
+};
+
 const Post = () => {
-  const { id } = useParams(); 
-  const [post, setPost] = useState(null);
-  const [blocks, setBlocks] = useState([]);
-  const [keywords, setKeywords] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { id } = useParams();
 
-  useEffect(() => {
-    const fetchPost = async () => {
-      setLoading(true);
+  // React Query hook
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+  } = useQuery(['postData', id], () => fetchPostData(id), {
+    staleTime: 1000 * 60 * 5, // cache considered fresh for 5 mins
+    cacheTime: 1000 * 60 * 10, // data stays in cache for 10 mins
+    retry: 1, // retry once if fail
+  });
 
-      // ✅ Fetch post details
-      const { data: postData, error: postError } = await supabase
-        .from('post')
-        .select('*')
-        .eq('post_id', id)
-        .single();
-
-      if (postError) {
-        console.error('Error fetching post:', postError);
-        setLoading(false);
-        return;
-      }
-
-      // ✅ Fetch blocks for this post
-      const { data: blockData, error: blockError } = await supabase
-        .from('block')
-        .select('*')
-        .eq('post_id', id)
-        .order('orderr', { ascending: true });
-
-      if (blockError) console.error('Error fetching blocks:', blockError);
-
-      // ✅ Fetch keywords (via join through post_keyword)
-      const { data: keywordData, error: keywordError } = await supabase
-        .from('post_keyword')
-        .select('keyword(keyword_id, keyword)')
-        .eq('post_id', id);
-
-      if (keywordError) console.error('Error fetching keywords:', keywordError);
-
-      setPost(postData);
-      setBlocks(blockData || []);
-      setKeywords(keywordData?.map((k) => k.keyword.keyword) || []);
-      setLoading(false);
-    };
-
-    fetchPost();
-  }, [id]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <>
         <NavHeader />
@@ -77,17 +67,21 @@ const Post = () => {
     );
   }
 
-  if (!post) {
+  if (isError || !data?.post) {
     return (
       <>
         <NavHeader />
         <main className="max-w-3xl mx-auto px-4 py-12 text-center">
-          <p className="text-red-500">Post not found.</p>
+          <p className="text-red-500">
+            {error?.message || 'Post not found.'}
+          </p>
         </main>
         <BlogFooter contactDetails={details} />
       </>
     );
   }
+
+  const { post, blocks, keywords } = data;
 
   const formattedDate = new Date(post.pub_date).toLocaleDateString('en-US', {
     day: 'numeric',
@@ -123,7 +117,6 @@ const Post = () => {
             •
             <span className="ml-2">{formattedDate}</span>
           </div>
-          
         </header>
 
         {/* Post Content */}
@@ -144,17 +137,19 @@ const Post = () => {
               )}
               {block.type === 'code' && (
                 <div className="rounded-xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700">
-                  <SyntaxHighlighter
-                    language="javascript"
-                    style={oneDark}
-                    customStyle={{
-                      padding: '1rem',
-                      fontSize: '0.9rem',
-                      borderRadius: '0.75rem',
-                    }}
-                  >
-                    {block.content}
-                  </SyntaxHighlighter>
+                  <Suspense fallback={<p className="text-sm text-gray-500">Loading code…</p>}>
+                    <SyntaxHighlighter
+                      language="javascript"
+                      style={oneDark}
+                      customStyle={{
+                        padding: '1rem',
+                        fontSize: '0.9rem',
+                        borderRadius: '0.75rem',
+                      }}
+                    >
+                      {block.content}
+                    </SyntaxHighlighter>
+                  </Suspense>
                 </div>
               )}
             </div>
