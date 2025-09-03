@@ -112,7 +112,7 @@ export default function NavBar() {
           <a
             href="#contact"
             onClick={() => setInContact(true)}
-            className={`ml-6 px-4 py-2 rounded-lg text-sm font-medium transition ${
+            className={`hidden md:inline ml-6 px-4 py-2 rounded-lg text-sm font-medium transition ${
               inContact
                 ? "bg-blue-900 text-white shadow-[0_0_10px_2px_rgba(30,58,138,0.8)] hover:shadow-[0_0_15px_4px_rgba(30,58,138,1)]"
                 : "bg-blue-900 text-white hover:bg-blue-800"

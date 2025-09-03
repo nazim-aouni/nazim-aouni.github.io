@@ -48,21 +48,22 @@ const PostsList = () => {
       </div>
 
       {/* Posts List */}
-      <div className="flex flex-col gap-8">
-        {posts.map((post) => (
-          <PostCard
-            key={post.post_id}
-            id={post.post_id}
-            image={post.image}
-            title={post.title}
-            description={post.description}
-            author={post.author}
-            date={new Date(post.pub_date).toLocaleDateString("en-US")}
-            category={post.category}
-            onClick={() => navigate(`/post/${post.post_id}`)}
-          />
-        ))}
-      </div>
+<div className="flex flex-col gap-8 px-2 sm:px-0">
+  {posts.map((post) => (
+    <PostCard
+      key={post.post_id}
+      id={post.post_id}
+      image={post.image}
+      title={post.title}
+      description={post.description}
+      author={post.author}
+      date={new Date(post.pub_date).toLocaleDateString("en-US")}
+      category={post.category}
+      onClick={() => navigate(`/post/${post.post_id}`)}
+      className="mx-auto w-full sm:w-auto" // ensure PostCard is centered and not full width
+    />
+  ))}
+</div>
     </section>
   );
 };

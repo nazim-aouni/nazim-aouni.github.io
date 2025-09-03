@@ -1,61 +1,69 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import NavHeader from '../components/NavHeader';
 import BlogFooter from '../components/BlogFooter';
 import { Helmet } from 'react-helmet';
 import { supabase } from '../SupabaseClient';
+import { useQuery } from '@tanstack/react-query';
 
-const details = {
-  mail: 'cslegacy10@gmail.com',
-};
+const details = { mail: 'cslegacy10@gmail.com' };
 
-// Lazy loading the heavy resource
+// Lazy load syntax highlighter
 const SyntaxHighlighter = React.lazy(() =>
   import('react-syntax-highlighter').then((mod) => ({ default: mod.Prism }))
 );
 
-// Fetch function with all queries
-const fetchPostData = async (id) => {
-  const [postRes, blockRes, keywordRes] = await Promise.all([
-    supabase.from('post').select('*').eq('post_id', id).single(),
-    supabase
-      .from('block')
-      .select('*')
-      .eq('post_id', id)
-      .order('orderr', { ascending: true }),
-    supabase
-      .from('post_keyword')
-      .select('keyword(keyword_id, keyword)')
-      .eq('post_id', id),
-  ]);
+const fetchPost = async (id) => {
+  const { data, error } = await supabase
+    .from('post')
+    .select('*')
+    .eq('post_id', id)
+    .single();
+  if (error) throw error;
+  return data;
+};
 
-  if (postRes.error) throw postRes.error;
+const fetchBlocks = async (id) => {
+  const { data, error } = await supabase
+    .from('block')
+    .select('*')
+    .eq('post_id', id)
+    .order('orderr', { ascending: true });
+  if (error) throw error;
+  return data;
+};
 
-  return {
-    post: postRes.data,
-    blocks: blockRes.data || [],
-    keywords: keywordRes.data?.map((k) => k.keyword.keyword) || [],
-  };
+const fetchKeywords = async (id) => {
+  const { data, error } = await supabase
+    .from('post_keyword')
+    .select('keyword(keyword_id, keyword)')
+    .eq('post_id', id);
+  if (error) throw error;
+  return data?.map((k) => k.keyword.keyword) || [];
 };
 
 const Post = () => {
   const { id } = useParams();
 
-  // React Query hook
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-  } = useQuery(['postData', id], () => fetchPostData(id), {
-    staleTime: 1000 * 60 * 5, // cache considered fresh for 5 mins
-    cacheTime: 1000 * 60 * 10, // data stays in cache for 10 mins
-    retry: 1, // retry once if fail
+  const { data: post, isLoading: postLoading, error: postError } = useQuery({
+    queryKey: ['post', id],
+    queryFn: () => fetchPost(id),
   });
 
-  if (isLoading) {
+  const { data: blocks, isLoading: blocksLoading } = useQuery({
+    queryKey: ['blocks', id],
+    queryFn: () => fetchBlocks(id),
+  });
+
+  const { data: keywords, isLoading: keywordsLoading } = useQuery({
+    queryKey: ['keywords', id],
+    queryFn: () => fetchKeywords(id),
+  });
+
+  const loading = postLoading || blocksLoading || keywordsLoading;
+
+  if (loading) {
     return (
       <>
         <NavHeader />
@@ -67,21 +75,17 @@ const Post = () => {
     );
   }
 
-  if (isError || !data?.post) {
+  if (postError || !post) {
     return (
       <>
         <NavHeader />
         <main className="max-w-3xl mx-auto px-4 py-12 text-center">
-          <p className="text-red-500">
-            {error?.message || 'Post not found.'}
-          </p>
+          <p className="text-red-500">Post not found.</p>
         </main>
         <BlogFooter contactDetails={details} />
       </>
     );
   }
-
-  const { post, blocks, keywords } = data;
 
   const formattedDate = new Date(post.pub_date).toLocaleDateString('en-US', {
     day: 'numeric',
@@ -94,7 +98,7 @@ const Post = () => {
       <Helmet>
         <title>{post.title}</title>
         <meta name="description" content={post.description || post.title} />
-        <meta name="keywords" content={keywords.join(', ')} />
+        <meta name="keywords" content={(keywords || []).join(', ')} />
       </Helmet>
 
       <NavHeader />
@@ -121,7 +125,7 @@ const Post = () => {
 
         {/* Post Content */}
         <article className="space-y-10">
-          {blocks.map((block) => (
+          {blocks?.map((block) => (
             <div key={block.block_id}>
               {block.type === 'text' && (
                 <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
@@ -137,19 +141,17 @@ const Post = () => {
               )}
               {block.type === 'code' && (
                 <div className="rounded-xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700">
-                  <Suspense fallback={<p className="text-sm text-gray-500">Loading code…</p>}>
-                    <SyntaxHighlighter
-                      language="javascript"
-                      style={oneDark}
-                      customStyle={{
-                        padding: '1rem',
-                        fontSize: '0.9rem',
-                        borderRadius: '0.75rem',
-                      }}
-                    >
-                      {block.content}
-                    </SyntaxHighlighter>
-                  </Suspense>
+                  <SyntaxHighlighter
+                    language="javascript"
+                    style={oneDark}
+                    customStyle={{
+                      padding: '1rem',
+                      fontSize: '0.9rem',
+                      borderRadius: '0.75rem',
+                    }}
+                  >
+                    {block.content}
+                  </SyntaxHighlighter>
                 </div>
               )}
             </div>
