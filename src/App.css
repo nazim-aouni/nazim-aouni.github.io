@@ -1,42 +1,377 @@
-#root {
-  max-width: 1280px;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+body {
+  background-color: #F5F5F5; 
   margin: 0 auto;
-  padding: 2rem;
+  text-align: center;
+  font-family: 'inter',sans-serif;
+}
+
+/* navbar styling */
+
+.navbar {
+  background-color: #F5F5F5; 
+  padding: 1rem 2rem;
+  display: flex;
+  gap: 3rem;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0;
+ 
+}
+
+.navbar a {
+  color: #0f172a;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+.navbar a:hover {
+  color: #38bdf8; 
+}
+
+.hero{
+margin: auto;
+width: 70%;
+margin-top: 100px;
+min-height: 400px;
+}
+#post_card:hover{
+cursor:progress
+}
+
+/* the post was made separately that's why it's styled using plain css and note tailwind */
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+.navhead {
+  box-shadow: 0.5px 2px 2px silver;
+  background-color:#4793AF;
+  color: black;
+  text-align: center;
+  line-height: 150px;
+  min-height: 150px;
+  min-width: 100%;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size:xx-large;
+  font-family: "Merriweather" ,Serif;
+  font-weight: bold;
+}
+.title {
+  margin-top: 100px;
+  margin-left: 3%;
+ text-align: left;
+ font-family: Merriweather;
+ font-size: xx-large;
+ font-weight: bold ;
+ font-style: italic; 
+}
+.date{
+  margin-top: 30px;
+  margin-left: 3%;
+ text-align: left;
+ font-size: medium;
+ 
+}
+.auth{
+  margin-top: 120px;
+ 
+}
+
+.content{
+  word-wrap: normal ;
+  text-align: left;
+  max-width: 60%;
+  margin: auto;
+  margin-top:150px;
+  overflow-wrap: break-word;
+  font-size: large;
+  line-height: 200%;
+  
+}
+.image{
+  min-width: 100%;
+  
+}
+.foot {
+  background-color:#4793AF;
+margin-top: 100px;
+min-width: 100%;
+width: 100%;
+min-height: 200px;
+box-shadow: 0.5 2px 2px silver;
+}
+.foot_text{
+  padding-top: 20px;
+  text-align: left;
+  font-size: large;
+  margin-left: 10%;
+}
+.foot_contact{
+  text-shadow: 0.5px 1px 1px #282c34;
+font-family: "Merriweather" ,Serif;
+font-size: x-large;
+padding-top: 50px;
+}
+.link{
+color: black;
+font-style: italic;  
+text-decoration: none;
+}
+.link:hover{
+color: #282c34;
+text-shadow: 0.2px 0.3px 0.3px silver;
+}
+.sidebar{
+width: 14%;
+margin-left: 0;
+background-color: white;
+color: wheat;
+position: absolute;
+top: 510px;
+height:500px;
+
+}
+.right_sidebar{
+margin-right: 0;
+margin-left: 86%;
+}
+.filter{
+width: 40%;
+margin-left: 0;
+display: inline-block;
+}
+
+.filter_element{
+  text-align: center;
+  border-radius: 20px;
+  margin: 2px;
+  display: block;
+  font-family: "Open Sans", sans-serif;
+  color: black;
+  transition: box-shadow 0.3s ease;
+}
+
+#first{
+  background-color: #4793AF;
+  margin-top: 40px;
+  display: inline-block;
+  margin-bottom: 10px;
+  border-radius:  20px;
+ border: 1px solid silver;
+}
+#first:hover ,#first:active,#first:focus,#first:focus-visible,#first:focus-within {
+ border: 1.5px solid black;
+ background-color: #4793AF;
+ box-shadow: 1px 1px 1px black;
+}
+#first >*{
+  background-color: #4793AF;
+}
+#first >*::placeholder{
+  background-color: #4793AF;
+  color:  black;
+  opacity: 1;
   text-align: center;
 }
+#second{
+margin-top: 10px;
+}
+#third{
+margin-top: 10px;
+display: inline-block;
+background-color: #4793AF;
+}
+#second > * {
+  display: inline;
+  border-radius: 20px;
+  background-color: #4793AF;
+  
+}
+#second > :nth-child(2){
+margin-left: 10px;
+}
+#first > :nth-child(1){
+border: none;
+margin-left: 5px;
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+margin-bottom: 2px;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+#first > :nth-child(1):hover{
+  border: none;
+  margin-left: 5px;
+  margin-bottom: 2px;
+  background-color: #4793AF;
   }
-  to {
-    transform: rotate(360deg);
+#first > :nth-child(1):active,#first > :nth-child(1):focus-within,#first > :nth-child(1):-moz-focusring{
+  border: none   ;
+  box-shadow: none;
+  outline: none;
+  background-color: #4793AF;
+  }
+  #first > :nth-child(1):focus{
+    border: none   ;
+    box-shadow: none;
+    outline: none;
+     background-color: #4793AF;
+    }
+   #first > :nth-child(1):focus-visible{
+      border: none   ;
+      box-shadow: none;
+      outline: none;
+      background-color: #4793AF;
+      }
+ 
+
+        #first > :nth-child(2){
+          border: none;
+          margin-right: 7px;
+          margin-top: 20px;
+          }       
+   #third:hover ,#third:active,#third:focus,#third:focus-visible,#third:focus-within {
+ border: 1.5px solid black;
+ background-color: #4793AF;
+ box-shadow: 1px 1px 1px black;
+}  
+#second > *:hover ,#second > *:active,#second > *:focus,#second > *,#second > *:focus-within {
+  border: 1.5px solid black;
+  background-color: #4793AF;
+  box-shadow: 1px 1px 1px black;
+ }
+  #second > * {
+    background-color: #4793AF;
+ } 
+ .fromto{
+display: inline-block !important;
+background-color: white !important;
+border: none !important;
+box-shadow: none !important;
+width: 100%;
+font-weight: bold;
+ } 
+ #second > :nth-child(3){
+ 
+  display: block !important;
+  margin-left: 0;
+ }
+#hook{
+font-family: 'Merriweather', Serif;
+font-size: x-large;
+
+text-align: left;
+width: 55%; 
+display: inline-block;
+}
+@media (max-width:520px) {
+  #hook{
+  width: 100%;
+  margin-top: 60px;
+  }
+  .filter{
+    width: 100%;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+.card{
+display: flex;
+flex-direction: column;
+border-radius: 8px;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+overflow: hidden;
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover{
+  transform: translateY(-10px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+.card{
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px black;
+  overflow: hidden;
+  margin: 3px;
+  cursor:  pointer;
+  }
+.card_image{
+width: 100%;
+height: 150px;
+object-fit: cover;
+}
+.card_content{
+padding: 16px;
+}
+.card_title{
+font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+font-size: 1.5em;
+font-weight: bold;
+}
+.card_desc{
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.9em; 
+}
+
+.post_container {
+  margin-top: 90px;
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+@media (min-width: 768px) {
+  .post_container {
+    grid-template-columns: repeat(3, minmax(300px, 1fr));
   }
 }
 
-.card {
-  padding: 2em;
+/* Adjust the layout for smaller screens (e.g., 1 column per row) */
+@media (max-width: 767px) {
+  .post_container {
+    grid-template-columns: repeat(1, minmax(300px, 1fr));
+}
 }
 
-.read-the-docs {
-  color: #888;
+.nothing,.nothing:hover,.nothing:focus{
+  color: black;
+  text-decoration: none;
 }
+.added:hover {
+text-shadow: 1px 1px 1px black;
+color:#4793AF;
+transition: color 0.3s ease;
+}
+.added {
+  transition: color 0.4s ease;
+  }
+  .back {
+    font-size: 2.7em;
+    font-weight:  bolder;
+    color: black;
+    background-color: #4793AF;
+    position: absolute;
+    top: 60px;
+    left: 5%;
+  }
+  .back:hover {
+    color: #282c34;
+    text-shadow: 2px 2px 2px black;
+    transition: text-shadow 0.4s ease;
+  }
